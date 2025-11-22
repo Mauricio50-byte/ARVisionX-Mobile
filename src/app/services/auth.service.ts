@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut, User } from 'firebase/auth';
+import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut, User, onAuthStateChanged } from 'firebase/auth';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -36,5 +36,12 @@ export class AuthService {
   getCurrentUser(): User | null {
     this.ensureInit();
     return this.auth!.currentUser;
+  }
+
+  async isAuthenticated(): Promise<boolean> {
+    this.ensureInit();
+    return new Promise<boolean>((resolve) => {
+      onAuthStateChanged(this.auth!, (user) => resolve(!!user));
+    });
   }
 }
