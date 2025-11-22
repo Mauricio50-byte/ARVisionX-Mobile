@@ -30,6 +30,7 @@ export class HomePage {
   uploadingPattern = false;
   uploadingModel = false;
   displayName = '';
+  private maxSizeBytes = 10 * 1024 * 1024;
 
   constructor(private auth: AuthService, private router: Router, private targetsService: TargetsService, private fb: FormBuilder, private toast: ToastController) {}
 
@@ -40,6 +41,11 @@ export class HomePage {
     if (u) {
       this.auth.userProfile$(u.uid).subscribe(p => this.displayName = p?.displayName || '');
     }
+    this.form.controls.type.valueChanges.subscribe(v => {
+      if (v === 'preset') {
+        this.form.patchValue({ pattern: 'hiro' });
+      }
+    });
   }
 
   async logout() {
@@ -70,6 +76,15 @@ export class HomePage {
   async onPatternSelected(ev: any) {
     const file = ev.target.files?.[0];
     if (!file) return;
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (!['patt','mind'].includes(ext || '')) {
+      await this.presentToast('Solo se permiten .patt o .mind');
+      return;
+    }
+    if (file.size > this.maxSizeBytes) {
+      await this.presentToast('Archivo demasiado grande');
+      return;
+    }
     this.uploadingPattern = true;
     const res = await this.targetsService.uploadFile(file, 'patterns');
     if (res.url) this.form.patchValue({ pattern: res.url, type: 'pattern' });
@@ -80,6 +95,15 @@ export class HomePage {
   async onModelSelected(ev: any) {
     const file = ev.target.files?.[0];
     if (!file) return;
+    const ext = file.name.toLowerCase().split('.').pop();
+    if (!['glb','gltf'].includes(ext || '')) {
+      await this.presentToast('Solo se permiten .glb o .gltf');
+      return;
+    }
+    if (file.size > this.maxSizeBytes) {
+      await this.presentToast('Archivo demasiado grande');
+      return;
+    }
     this.uploadingModel = true;
     const res = await this.targetsService.uploadFile(file, 'models');
     if (res.url) this.form.patchValue({ modelUrl: res.url });
