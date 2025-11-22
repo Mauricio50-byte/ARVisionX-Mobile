@@ -2,19 +2,43 @@
   <ion-toolbar>
     <ion-title>Login</ion-title>
   </ion-toolbar>
-  </ion-header>
+</ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-list>
-    <ion-item>
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input type="email" [(ngModel)]="email"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Password</ion-label>
-      <ion-input type="password" [(ngModel)]="password"></ion-input>
-    </ion-item>
-    <ion-button expand="block" (click)="onSubmit()">Ingresar</ion-button>
-  </ion-list>
-  <ion-button fill="clear" routerLink="/register">Crear cuenta</ion-button>
+  <ion-grid fixed>
+    <ion-row class="ion-justify-content-center ion-padding">
+      <ion-col size="12" sizeMd="6" sizeLg="4">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Bienvenido</ion-card-title>
+            <ion-card-subtitle>Ingresa a tu cuenta</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <form [formGroup]="form" (ngSubmit)="onSubmit()">
+              <ion-item>
+                <ion-label position="stacked">Email</ion-label>
+                <ion-input type="email" formControlName="email"></ion-input>
+              </ion-item>
+              <ion-note color="danger" *ngIf="form.controls.email.invalid && form.controls.email.touched">Email inválido</ion-note>
+
+              <ion-item>
+                <ion-label position="stacked">Password</ion-label>
+                <ion-input [type]="showPassword ? 'text' : 'password'" formControlName="password"></ion-input>
+                <ion-button fill="clear" slot="end" (click)="showPassword = !showPassword">{{ showPassword ? 'Ocultar' : 'Mostrar' }}</ion-button>
+              </ion-item>
+              <ion-note color="danger" *ngIf="form.controls.password.invalid && form.controls.password.touched">Mínimo 6 caracteres</ion-note>
+
+              <ion-button expand="block" type="submit" [disabled]="form.invalid || loading">
+                <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+                <span *ngIf="!loading">Ingresar</span>
+              </ion-button>
+              <ion-note color="danger" *ngIf="error">{{error}}</ion-note>
+            </form>
+
+            <ion-button fill="clear" (click)="goRegister()">Crear cuenta</ion-button>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
