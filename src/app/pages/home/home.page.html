@@ -1,6 +1,16 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Home</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/ar">AR</ion-button>
+      <ion-button (click)="logout()">Cerrar sesión</ion-button>
+    </ion-buttons>
+    <ion-item>
+      <ion-label>Target</ion-label>
+      <ion-select interface="popover" (ionChange)="onTargetChange($event)">
+        <ion-select-option *ngFor="let t of targets" [value]="t.id">{{t.name}}</ion-select-option>
+      </ion-select>
+    </ion-item>
   </ion-toolbar>
 </ion-header>
 

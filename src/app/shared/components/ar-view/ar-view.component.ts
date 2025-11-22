@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
+import { TargetsService } from '../../../core/services/targets.service';
 
 @Component({
   selector: 'app-ar-view',
@@ -6,4 +7,24 @@ import { Component } from '@angular/core';
   styleUrls: ['./ar-view.component.scss'],
   standalone: false,
 })
-export class ArViewComponent {}
+export class ArViewComponent implements AfterViewInit {
+  constructor(private targets: TargetsService) {}
+
+  ngAfterViewInit() {
+    this.targets.getActiveTarget().subscribe(target => {
+      const marker = document.querySelector('#dynamic-marker') as any;
+      if (!marker) return;
+      if (target.type === 'preset') {
+        marker.setAttribute('preset', target.pattern);
+      } else {
+        marker.setAttribute('type', target.type);
+        marker.setAttribute('url', target.pattern);
+      }
+      const model = document.querySelector('#model-container') as any;
+      if (model && target.modelUrl) {
+        model.setAttribute('gltf-model', target.modelUrl);
+        model.setAttribute('scale', target.scale);
+      }
+    });
+  }
+}
