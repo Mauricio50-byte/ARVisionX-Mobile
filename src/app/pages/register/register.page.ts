@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -11,5 +13,12 @@ export class RegisterPage {
   email = '';
   password = '';
 
-  onSubmit() {}
+  constructor(private auth: AuthService, private router: Router) {}
+
+  async onSubmit() {
+    try {
+      await this.auth.register(this.displayName, this.email, this.password);
+      this.router.navigate(['/home']);
+    } catch (e) {}
+  }
 }
