@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>AR</ion-title>
+    <ion-title>AR {{displayName ? ('- ' + displayName) : ''}}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="logout()">Cerrar sesión</ion-button>
     </ion-buttons>

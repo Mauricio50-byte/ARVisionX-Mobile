@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Target } from '../models/target.model';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -16,6 +17,9 @@ export class TargetsService {
   });
   private targetsList = new BehaviorSubject<Target[]>([this.subject.value]);
   private supabase: SupabaseClient | null = null;
+  private bucketName: string = (environment as any).supabase.storageBucket || 'assets';
+
+  constructor(private http: HttpClient) {}
 
   private ensureInit() {
     if (!this.supabase) {
@@ -25,6 +29,16 @@ export class TargetsService {
           autoRefreshToken: false
         }
       });
+    }
+  }
+
+  private async ensureBucket(): Promise<boolean> {
+    this.ensureInit();
+    try {
+      const res = await this.supabase!.storage.from(this.bucketName).list('');
+      return !res.error;
+    } catch {
+      return false;
     }
   }
 
@@ -56,6 +70,54 @@ export class TargetsService {
       }
     } catch {
       this.targetsList.next([this.subject.value]);
+    }
+  }
+
+  async upsertTarget(target: Target): Promise<boolean> {
+    this.ensureInit();
+    const payload: any = {
+      id: target.id || Date.now(),
+      name: target.name,
+      type: target.type,
+      pattern: target.pattern,
+      modelUrl: target.modelUrl,
+      scale: target.scale
+    };
+    const { error } = await this.supabase!.from('targets').upsert(payload);
+    if (error) return false;
+    await this.fetchTargets();
+    this.setActiveTarget(payload as Target);
+    return true;
+  }
+
+  async fetchTargetsFromJson(url: string): Promise<void> {
+    try {
+      const data = await this.http.get<Target[]>(url).toPromise();
+      if (data && data.length) {
+        this.targetsList.next(data);
+        this.subject.next(data[0]);
+      }
+    } catch {
+      this.targetsList.next([this.subject.value]);
+    }
+  }
+
+  async uploadFile(file: File, folder: string): Promise<{ url: string | null, error?: string }> {
+    this.ensureInit();
+    const ok = await this.ensureBucket();
+    if (!ok) return { url: null, error: `Bucket ${this.bucketName} no existe o no es accesible` };
+    const safeName = file.name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_.-]/g, '');
+    const path = `${folder}/${Date.now()}-${safeName}`;
+    const up = await this.supabase!.storage.from(this.bucketName).upload(path, file, { upsert: true });
+    if (up.error) return { url: null, error: up.error.message };
+    const pub = this.supabase!.storage.from(this.bucketName).getPublicUrl(path);
+    return { url: pub.data.publicUrl || null };
+  }
+
+  setTargetsFromList(list: Target[]) {
+    if (list && list.length) {
+      this.targetsList.next(list);
+      this.subject.next(list[0]);
     }
   }
 }

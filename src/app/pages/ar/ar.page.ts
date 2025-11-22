@@ -9,7 +9,15 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: false
 })
 export class ArPage {
+  displayName = '';
   constructor(private auth: AuthService, private router: Router) {}
+
+  ngOnInit() {
+    const u = this.auth.getCurrentUser();
+    if (u) {
+      this.auth.userProfile$(u.uid).subscribe(p => this.displayName = p?.displayName || '');
+    }
+  }
 
   async logout() {
     await this.auth.logout();

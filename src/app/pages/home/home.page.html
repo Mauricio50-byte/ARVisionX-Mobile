@@ -1,6 +1,6 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Home</ion-title>
+    <ion-title>Home {{displayName ? ('- ' + displayName) : ''}}</ion-title>
     <ion-buttons slot="end">
       <ion-button routerLink="/ar">AR</ion-button>
       <ion-button (click)="logout()">Cerrar sesión</ion-button>
@@ -15,8 +15,85 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <div style="padding:16px">
-    <h2>Bienvenido</h2>
-    <p>Autenticación completada.</p>
-  </div>
+  <ion-grid fixed>
+    <ion-row class="ion-padding">
+      <ion-col size="12" sizeMd="6">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Agregar Target a Supabase</ion-card-title>
+            <ion-card-subtitle>Completa los datos y guarda</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <form [formGroup]="form" (ngSubmit)="saveTarget()">
+              <ion-list lines="full">
+                <ion-item>
+                  <ion-label position="stacked">Nombre</ion-label>
+                  <ion-input formControlName="name" placeholder="Ej: Logo AR"></ion-input>
+                </ion-item>
+                <ion-note color="danger" *ngIf="form.controls.name.invalid && form.controls.name.touched">Requerido</ion-note>
+
+                <ion-item>
+                  <ion-label position="stacked">Tipo</ion-label>
+                  <ion-segment formControlName="type">
+                    <ion-segment-button value="preset">Preset</ion-segment-button>
+                    <ion-segment-button value="pattern">Pattern</ion-segment-button>
+                  </ion-segment>
+                </ion-item>
+
+                <ion-item>
+                  <ion-label position="stacked">Pattern/URL</ion-label>
+                  <ion-input formControlName="pattern" placeholder="hiro o URL .patt/.mind"></ion-input>
+                </ion-item>
+                <div class="upload-row">
+                  <ion-button size="small" [disabled]="uploadingPattern" (click)="patternInput.click()">
+                    {{ uploadingPattern ? 'Subiendo...' : 'Subir Pattern' }}
+                  </ion-button>
+                  <input #patternInput type="file" hidden accept=".patt,.mind,image/*" (change)="onPatternSelected($event)" />
+                </div>
+
+                <ion-item>
+                  <ion-label position="stacked">Model URL</ion-label>
+                  <ion-input formControlName="modelUrl" placeholder="URL .glb/.gltf"></ion-input>
+                </ion-item>
+                <div class="upload-row">
+                  <ion-button size="small" [disabled]="uploadingModel" (click)="modelInput.click()">
+                    {{ uploadingModel ? 'Subiendo...' : 'Subir Modelo' }}
+                  </ion-button>
+                  <input #modelInput type="file" hidden accept=".glb,.gltf,model/*" (change)="onModelSelected($event)" />
+                </div>
+
+                <ion-item>
+                  <ion-label position="stacked">Scale</ion-label>
+                  <ion-input formControlName="scale" placeholder="0.5 0.5 0.5"></ion-input>
+                </ion-item>
+              </ion-list>
+              <ion-button expand="block" type="submit" [disabled]="form.invalid || saving">
+                <ion-spinner *ngIf="saving" name="dots"></ion-spinner>
+                <span *ngIf="!saving">Guardar</span>
+              </ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="12" sizeMd="6">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Cargar Targets desde JSON</ion-card-title>
+            <ion-card-subtitle>Remoto o local</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-item>
+              <ion-label position="stacked">JSON URL</ion-label>
+              <ion-input [(ngModel)]="jsonUrl" placeholder="https://.../targets.json"></ion-input>
+            </ion-item>
+            <ion-button expand="block" (click)="loadFromJson()" [disabled]="!jsonUrl">Cargar</ion-button>
+            <div class="upload-row">
+              <ion-button size="small" (click)="jsonInput.click()">Cargar JSON desde dispositivo</ion-button>
+              <input #jsonInput type="file" hidden accept="application/json" (change)="onJsonSelected($event)" />
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
