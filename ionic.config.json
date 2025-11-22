@@ -1,0 +1,7 @@
+{
+  "name": "ARVisionX Mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
