@@ -1,8 +1,9 @@
 export interface Target {
-  id: number;
+  id?: number;
   name: string;
   type: string;
   pattern: string;
   modelUrl: string;
   scale: string;
+  userId?: string;
 }

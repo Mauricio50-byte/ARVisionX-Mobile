@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, inject } from '@angular/core';
 import { TargetsService } from '../../../core/services/targets.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { TargetsService } from '../../../core/services/targets.service';
   standalone: false,
 })
 export class ArViewComponent implements AfterViewInit {
-  constructor(private targets: TargetsService) {}
+  private targets = inject(TargetsService);
 
   ngAfterViewInit() {
     this.targets.getActiveTarget().subscribe(target => {

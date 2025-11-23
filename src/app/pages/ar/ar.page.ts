@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -8,9 +8,10 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrls: ['ar.page.scss'],
   standalone: false
 })
-export class ArPage {
+export class ArPage implements OnInit {
   displayName = '';
-  constructor(private auth: AuthService, private router: Router) {}
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit() {
     const u = this.auth.getCurrentUser();

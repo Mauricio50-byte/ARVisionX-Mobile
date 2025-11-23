@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TargetsService } from '../../core/services/targets.service';
@@ -12,10 +12,15 @@ import { ToastController } from '@ionic/angular';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage {
+export class HomePage implements OnInit {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private targetsService = inject(TargetsService);
+  private fb = inject(FormBuilder);
+  private toast = inject(ToastController);
   targets: Target[] = [];
   form = this.fb.group({
-    id: [Date.now()],
+    id: [null],
     name: ['', [Validators.required]],
     type: ['pattern', [Validators.required]],
     pattern: ['', [Validators.required]],
@@ -31,8 +36,6 @@ export class HomePage {
   uploadingModel = false;
   displayName = '';
   private maxSizeBytes = 10 * 1024 * 1024;
-
-  constructor(private auth: AuthService, private router: Router, private targetsService: TargetsService, private fb: FormBuilder, private toast: ToastController) {}
 
   ngOnInit() {
     this.targetsService.getTargets().subscribe(list => this.targets = list);

@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Target } from '../models/target.model';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class TargetsService {
@@ -18,17 +19,12 @@ export class TargetsService {
   private targetsList = new BehaviorSubject<Target[]>([this.subject.value]);
   private supabase: SupabaseClient | null = null;
   private bucketName: string = (environment as any).supabase.storageBucket || 'assets';
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   private ensureInit() {
     if (!this.supabase) {
-      this.supabase = createClient(environment.supabase.url, environment.supabase.anonKey, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        }
-      });
+      this.supabase = this.auth.getSupabaseClient();
     }
   }
 
@@ -57,9 +53,22 @@ export class TargetsService {
   async fetchTargets(): Promise<void> {
     try {
       this.ensureInit();
-      const { data, error, status } = await this.supabase!.from('targets').select('*');
+      const uid = this.auth.getFirebaseUid();
+      if (!uid) {
+        this.targetsList.next([this.subject.value]);
+        return;
+      }
+      const { data, error, status } = await this.supabase!.from('targets').select('*').eq('user_id', uid);
       if (!error && data && data.length) {
-        const list = data as Target[];
+        const list = (data as any[]).map(x => ({
+          id: x.id,
+          name: x.name,
+          type: x.type,
+          pattern: x.pattern,
+          modelUrl: x.modelUrl,
+          scale: x.scale,
+          userId: x.user_id || uid
+        })) as Target[];
         this.targetsList.next(list);
         this.subject.next(list[0]);
         return;
@@ -75,18 +84,21 @@ export class TargetsService {
 
   async upsertTarget(target: Target): Promise<boolean> {
     this.ensureInit();
+    const uid = this.auth.getFirebaseUid();
+    if (!uid) return false;
     const payload: any = {
-      id: target.id || Date.now(),
+      ...(target.id ? { id: target.id } : {}),
       name: target.name,
       type: target.type,
       pattern: target.pattern,
       modelUrl: target.modelUrl,
-      scale: target.scale
+      scale: target.scale,
+      user_id: uid
     };
     const { error } = await this.supabase!.from('targets').upsert(payload);
     if (error) return false;
     await this.fetchTargets();
-    this.setActiveTarget(payload as Target);
+    this.setActiveTarget({ ...target, userId: uid });
     return true;
   }
 
@@ -104,10 +116,12 @@ export class TargetsService {
 
   async uploadFile(file: File, folder: string): Promise<{ url: string | null, error?: string }> {
     this.ensureInit();
+    const uid = this.auth.getFirebaseUid();
+    if (!uid) return { url: null, error: 'Usuario no autenticado' };
     const ok = await this.ensureBucket();
     if (!ok) return { url: null, error: `Bucket ${this.bucketName} no existe o no es accesible` };
     const safeName = file.name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9_.-]/g, '');
-    const path = `${folder}/${Date.now()}-${safeName}`;
+    const path = `users/${uid}/${folder}/${Date.now()}-${safeName}`;
     const up = await this.supabase!.storage.from(this.bucketName).upload(path, file, { upsert: true });
     if (up.error) return { url: null, error: up.error.message };
     const pub = this.supabase!.storage.from(this.bucketName).getPublicUrl(path);

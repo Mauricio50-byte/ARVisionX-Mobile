@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
@@ -10,6 +10,7 @@ import { FormBuilder, Validators } from '@angular/forms';
   standalone: false,
 })
 export class RegisterPage {
+  private fb = inject(FormBuilder);
   form = this.fb.group({
     displayName: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
@@ -19,7 +20,8 @@ export class RegisterPage {
   loading = false;
   error = '';
 
-  constructor(private auth: AuthService, private router: Router, private fb: FormBuilder) {}
+  private auth = inject(AuthService);
+  private router = inject(Router);
 
   async onSubmit() {
     if (this.form.invalid || this.loading) return;
