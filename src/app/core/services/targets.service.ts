@@ -82,6 +82,28 @@ export class TargetsService {
     }
   }
 
+  async getTargetById(id: number): Promise<Target | null> {
+    this.ensureInit();
+    const uid = this.auth.getFirebaseUid();
+    if (!uid || !id) return null;
+    const { data, error } = await this.supabase!.from('targets').select('*').eq('user_id', uid).eq('id', id).maybeSingle();
+    if (error || !data) return null;
+    return {
+      id: data.id,
+      name: data.name,
+      type: data.type,
+      pattern: data.pattern,
+      modelUrl: data.modelUrl,
+      scale: data.scale,
+      userId: data.user_id || uid
+    } as Target;
+  }
+
+  async createTarget(target: Target): Promise<boolean> {
+    const t: Target = { ...target, id: undefined };
+    return await this.upsertTarget(t);
+  }
+
   async upsertTarget(target: Target): Promise<boolean> {
     this.ensureInit();
     const uid = this.auth.getFirebaseUid();
@@ -99,6 +121,16 @@ export class TargetsService {
     if (error) return false;
     await this.fetchTargets();
     this.setActiveTarget({ ...target, userId: uid });
+    return true;
+  }
+
+  async deleteTarget(id: number): Promise<boolean> {
+    this.ensureInit();
+    const uid = this.auth.getFirebaseUid();
+    if (!uid || !id) return false;
+    const { error } = await this.supabase!.from('targets').delete().eq('id', id).eq('user_id', uid);
+    if (error) return false;
+    await this.fetchTargets();
     return true;
   }
 

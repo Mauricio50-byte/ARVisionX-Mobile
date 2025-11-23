@@ -1,0 +1,25 @@
+<div class="header-bar">
+  <div class="header-left">
+    <ion-menu-button menu="main-menu"></ion-menu-button>
+    <span class="header-title">{{title}}</span>
+  </div>
+  <div class="header-right">
+    <ion-chip class="user-chip" (click)="onOpenProfile()">
+      <ion-avatar class="avatar">
+        <span>{{ displayInitials }}</span>
+      </ion-avatar>
+      <ion-label>{{displayName}}</ion-label>
+    </ion-chip>
+  </div>
+  
+</div>
+
+<ion-modal [isOpen]="openProfileModal" (didDismiss)="openProfileModal=false" style="--width: 720px; --max-width: 95vw; --height: auto; --border-radius: 16px;">
+  <ng-template>
+    <div class="p-3">
+      <div class="card shadow border-0 rounded-4">
+        <app-user-profile (close)="openProfileModal=false"></app-user-profile>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

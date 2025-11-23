@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signOut, User, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, Database, ref, set, update, serverTimestamp, onValue } from 'firebase/database';
+import { getDatabase, Database, ref, set, update, serverTimestamp, onValue, get, remove } from 'firebase/database';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -110,5 +110,37 @@ export class AuthService {
       const unsubscribe = onValue(r, (snapshot) => subscriber.next(snapshot.val()));
       return () => unsubscribe();
     });
+  }
+
+  async getUserProfile(): Promise<any | null> {
+    this.ensureInit();
+    const uid = this.auth!.currentUser?.uid;
+    if (!uid) return null;
+    const snapshot = await get(ref(this.db!, `users/${uid}`));
+    return snapshot.exists() ? snapshot.val() : null;
+  }
+
+  async updateUserProfile(patch: any): Promise<boolean> {
+    this.ensureInit();
+    const uid = this.auth!.currentUser?.uid;
+    if (!uid) return false;
+    try {
+      await update(ref(this.db!, `users/${uid}`), { ...patch, updatedAt: serverTimestamp() });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async deleteUserProfile(): Promise<boolean> {
+    this.ensureInit();
+    const uid = this.auth!.currentUser?.uid;
+    if (!uid) return false;
+    try {
+      await remove(ref(this.db!, `users/${uid}`));
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

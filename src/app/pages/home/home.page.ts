@@ -20,7 +20,7 @@ export class HomePage implements OnInit {
   private toast = inject(ToastController);
   targets: Target[] = [];
   form = this.fb.group({
-    id: [null],
+    id: [null as number | null],
     name: ['', [Validators.required]],
     type: ['pattern', [Validators.required]],
     pattern: ['', [Validators.required]],
@@ -28,6 +28,8 @@ export class HomePage implements OnInit {
     scale: ['1 1 1', [Validators.required]]
   });
   jsonUrl = '';
+  openTargetsModal = false;
+  openImportModal = false;
   patternFile: File | null = null;
   modelFile: File | null = null;
   jsonFile: File | null = null;
@@ -36,9 +38,12 @@ export class HomePage implements OnInit {
   uploadingModel = false;
   displayName = '';
   private maxSizeBytes = 10 * 1024 * 1024;
+  presets: string[] = ['hiro', 'kanji'];
+  selectedPreset = 'hiro';
+  private lastPatternUrl = '';
 
   ngOnInit() {
-    this.targetsService.getTargets().subscribe(list => this.targets = list);
+    this.targetsService.getTargets().subscribe(list => { this.targets = list; });
     this.targetsService.fetchTargets();
     const u = this.auth.getCurrentUser();
     if (u) {
@@ -46,9 +51,26 @@ export class HomePage implements OnInit {
     }
     this.form.controls.type.valueChanges.subscribe(v => {
       if (v === 'preset') {
-        this.form.patchValue({ pattern: 'hiro' });
+        this.lastPatternUrl = (this.form.value.pattern || this.lastPatternUrl) as string;
+        this.form.patchValue({ pattern: this.selectedPreset });
+      } else {
+        const restore = this.lastPatternUrl || '';
+        this.form.patchValue({ pattern: restore });
       }
     });
+  }
+
+  openProfileFromMenu() {
+    window.dispatchEvent(new Event('open-profile'));
+  }
+
+  navigateArFromMenu() {
+    this.router.navigate(['/ar']);
+  }
+
+  async logoutFromMenu() {
+    await this.auth.logout();
+    this.router.navigate(['/login']);
   }
 
   async logout() {
@@ -56,11 +78,64 @@ export class HomePage implements OnInit {
     this.router.navigate(['/login']);
   }
 
+
   onTargetChange(ev: any) {
     const id = ev.detail?.value;
     const t = this.targets.find(x => x.id === id);
-    if (t) this.targetsService.setActiveTarget(t);
+    if (t) {
+      this.targetsService.setActiveTarget(t);
+      this.form.patchValue({
+        id: (t.id ?? null) as number | null,
+        name: t.name,
+        type: t.type,
+        pattern: t.pattern,
+        modelUrl: t.modelUrl,
+        scale: t.scale
+      });
+      if (t.type === 'pattern') {
+        this.lastPatternUrl = t.pattern || '';
+      } else {
+        this.lastPatternUrl = this.lastPatternUrl;
+      }
+    }
   }
+
+  editTarget(t: Target) {
+    this.targetsService.setActiveTarget(t);
+    this.onTargetChange({ detail: { value: t.id } });
+  }
+
+  newTarget() {
+    this.form.patchValue({ id: null, name: '', type: 'pattern', pattern: '', modelUrl: '', scale: '1 1 1' });
+    this.lastPatternUrl = '';
+  }
+
+  openTargets() {
+    this.openTargetsModal = true;
+  }
+
+  onTableEdit(t: Target) {
+    this.editTarget(t);
+    this.openTargetsModal = false;
+  }
+
+  onTableDelete(id: number) {
+    this.form.patchValue({ id });
+    this.deleteTarget();
+  }
+
+  onPresetChange(ev: any) {
+    const val = (ev.detail?.value || '').toString();
+    if (this.presets.includes(val)) {
+      this.selectedPreset = val;
+      this.form.patchValue({ pattern: val });
+    }
+  }
+
+  openImportJson() {
+    this.openImportModal = true;
+  }
+
 
   async saveTarget() {
     if (this.form.invalid || this.saving) return;
@@ -68,6 +143,19 @@ export class HomePage implements OnInit {
     const ok = await this.targetsService.upsertTarget(this.form.value as Target);
     await this.presentToast(ok ? 'Target guardado' : 'Error al guardar target (tabla/políticas)');
     this.saving = false;
+  }
+
+  async deleteTarget() {
+    const id = this.form.value.id as number | null;
+    if (!id) {
+      await this.presentToast('Selecciona un target para eliminar');
+      return;
+    }
+    const ok = await this.targetsService.deleteTarget(id);
+    await this.presentToast(ok ? 'Target eliminado' : 'Error al eliminar target (tabla/políticas)');
+    if (ok) {
+      this.form.patchValue({ id: null, name: '', type: 'pattern', pattern: '', modelUrl: '', scale: '1 1 1' });
+    }
   }
 
   async loadFromJson() {
@@ -90,7 +178,10 @@ export class HomePage implements OnInit {
     }
     this.uploadingPattern = true;
     const res = await this.targetsService.uploadFile(file, 'patterns');
-    if (res.url) this.form.patchValue({ pattern: res.url, type: 'pattern' });
+    if (res.url) {
+      this.lastPatternUrl = res.url;
+      this.form.patchValue({ pattern: res.url, type: 'pattern' });
+    }
     await this.presentToast(res.url ? 'Pattern subido' : (res.error || 'Error al subir pattern'));
     this.uploadingPattern = false;
   }

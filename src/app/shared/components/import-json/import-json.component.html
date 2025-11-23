@@ -1,0 +1,34 @@
+<div class="card-header bg-white border-0 py-3">
+  <div class="d-flex align-items-center justify-content-between">
+    <div>
+      <h5 class="mb-0">Importar Targets desde JSON</h5>
+      <small class="text-muted">Remoto o local</small>
+    </div>
+    <ion-button fill="clear" size="small" aria-label="Cerrar" (click)="close.emit()">
+      <ion-icon name="close-outline"></ion-icon>
+    </ion-button>
+  </div>
+</div>
+<div class="card-body">
+  <div class="row g-3">
+    <div class="col-12 col-md-6">
+      <ion-item>
+        <ion-label position="stacked">JSON URL</ion-label>
+        <ion-input [(ngModel)]="jsonUrl" placeholder="https://.../targets.json"></ion-input>
+      </ion-item>
+    </div>
+    <div class="col-12 col-md-6 d-flex align-items-end">
+      <button class="btn btn-primary" (click)="loadFromUrl()" [disabled]="!jsonUrl || loading">
+        <i class="bi bi-cloud-download me-1"></i> Cargar
+      </button>
+    </div>
+    <div class="col-12">
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" (click)="fileInput.click()">
+          <i class="bi bi-upload me-1"></i> Cargar JSON desde dispositivo
+        </button>
+        <input #fileInput type="file" hidden accept="application/json" (change)="onFileSelected($event)" />
+      </div>
+    </div>
+  </div>
+</div>

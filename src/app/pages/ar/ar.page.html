@@ -8,5 +8,15 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <app-ar-view></app-ar-view>
-</ion-content>
+  <div class="container py-3">
+    <ion-card class="shadow rounded-4 border-0">
+      <ion-card-header>
+        <ion-card-title>Visor AR</ion-card-title>
+        <ion-card-subtitle>Apunta la cámara al patrón configurado</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <app-ar-view></app-ar-view>
+      </ion-card-content>
+    </ion-card>
+  </div>
+  </ion-content>

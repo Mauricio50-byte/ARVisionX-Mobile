@@ -1,37 +1,36 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>Home {{displayName ? ('- ' + displayName) : ''}}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button routerLink="/ar">AR</ion-button>
-      <ion-button (click)="logout()">Cerrar sesión</ion-button>
-    </ion-buttons>
-    <ion-item>
-      <ion-label>Target</ion-label>
-      <ion-select interface="popover" (ionChange)="onTargetChange($event)">
-        <ion-select-option *ngFor="let t of targets" [value]="t.id">{{t.name}}</ion-select-option>
-      </ion-select>
-    </ion-item>
+    <app-header-actions [title]="'Panel de Targets'" [displayName]="displayName || 'Usuario'"></app-header-actions>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-grid fixed>
-    <ion-row class="ion-padding">
-      <ion-col size="12" sizeMd="6">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Agregar Target a Supabase</ion-card-title>
-            <ion-card-subtitle>Completa los datos y guarda</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <form [formGroup]="form" (ngSubmit)="saveTarget()">
-              <ion-list lines="full">
+<ion-content [fullscreen]="true" id="home-content">
+  <div class="container py-4">
+    <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        <div class="card shadow border-0 rounded-4">
+          <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <h5 class="mb-0">Editor de Target</h5>
+                <small class="text-muted">Completa los datos y guarda</small>
+              </div>
+              <button class="btn btn-outline-primary btn-sm" (click)="openImportJson()">
+                <i class="bi bi-download me-1"></i> Importar desde JSON
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="form" (ngSubmit)="saveTarget()" class="row g-3">
+              <div class="col-12">
                 <ion-item>
                   <ion-label position="stacked">Nombre</ion-label>
                   <ion-input formControlName="name" placeholder="Ej: Logo AR"></ion-input>
                 </ion-item>
                 <ion-note color="danger" *ngIf="form.controls.name.invalid && form.controls.name.touched">Requerido</ion-note>
+              </div>
 
+              <div class="col-12">
                 <ion-item>
                   <ion-label position="stacked">Tipo</ion-label>
                   <ion-segment formControlName="type">
@@ -39,61 +38,121 @@
                     <ion-segment-button value="pattern">Pattern</ion-segment-button>
                   </ion-segment>
                 </ion-item>
+              </div>
 
-                <ion-item>
-                  <ion-label position="stacked">Pattern/URL</ion-label>
-                  <ion-input formControlName="pattern" placeholder="hiro o URL .patt/.mind"></ion-input>
-                </ion-item>
-                <div class="upload-row">
-                  <ion-button size="small" [disabled]="uploadingPattern" (click)="patternInput.click()">
-                    {{ uploadingPattern ? 'Subiendo...' : 'Subir Pattern' }}
-                  </ion-button>
-                  <input #patternInput type="file" hidden accept=".patt,.mind,image/*" (change)="onPatternSelected($event)" />
-                </div>
+              <div class="col-12">
+                <ng-container *ngIf="form.value.type === 'preset'; else patternUrlBlock">
+                  <ion-item>
+                    <ion-label position="stacked">Preset</ion-label>
+                    <ion-select [value]="selectedPreset" interface="popover" (ionChange)="onPresetChange($event)">
+                      <ion-select-option *ngFor="let p of presets" [value]="p">{{p}}</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                </ng-container>
+                <ng-template #patternUrlBlock>
+                  <ion-item>
+                    <ion-label position="stacked">Pattern/URL</ion-label>
+                    <ion-input formControlName="pattern" placeholder="URL .patt/.mind"></ion-input>
+                  </ion-item>
+                  <div class="mt-2 d-flex gap-2">
+                    <ion-button size="small" [disabled]="uploadingPattern" (click)="patternInput.click()">
+                      {{ uploadingPattern ? 'Subiendo...' : 'Subir Pattern' }}
+                    </ion-button>
+                    <input #patternInput type="file" hidden accept=".patt,.mind,image/*" (change)="onPatternSelected($event)" />
+                  </div>
+                </ng-template>
+              </div>
 
+              <div class="col-12">
                 <ion-item>
                   <ion-label position="stacked">Model URL</ion-label>
                   <ion-input formControlName="modelUrl" placeholder="URL .glb/.gltf"></ion-input>
                 </ion-item>
-                <div class="upload-row">
+                <div class="mt-2 d-flex gap-2">
                   <ion-button size="small" [disabled]="uploadingModel" (click)="modelInput.click()">
                     {{ uploadingModel ? 'Subiendo...' : 'Subir Modelo' }}
                   </ion-button>
                   <input #modelInput type="file" hidden accept=".glb,.gltf,model/*" (change)="onModelSelected($event)" />
                 </div>
+              </div>
 
+              <div class="col-12">
                 <ion-item>
                   <ion-label position="stacked">Scale</ion-label>
                   <ion-input formControlName="scale" placeholder="0.5 0.5 0.5"></ion-input>
                 </ion-item>
-              </ion-list>
-              <ion-button expand="block" type="submit" [disabled]="form.invalid || saving">
-                <ion-spinner *ngIf="saving" name="dots"></ion-spinner>
-                <span *ngIf="!saving">Guardar</span>
-              </ion-button>
+              </div>
+
+              <div class="col-12">
+                <div class="d-flex gap-2 mt-2">
+                  <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving">
+                    <i class="bi bi-save me-1"></i>
+                    <span *ngIf="!saving">Guardar</span>
+                    <span *ngIf="saving" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" (click)="newTarget()">
+                    <i class="bi bi-plus-lg me-1"></i>
+                    Nuevo Target
+                  </button>
+                  <button type="button" class="btn btn-outline-primary" (click)="openTargets()">
+                    <i class="bi bi-list me-1"></i>
+                    Consultar Targets
+                  </button>
+                </div>
+              </div>
             </form>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="12" sizeMd="6">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-title>Cargar Targets desde JSON</ion-card-title>
-            <ion-card-subtitle>Remoto o local</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-item>
-              <ion-label position="stacked">JSON URL</ion-label>
-              <ion-input [(ngModel)]="jsonUrl" placeholder="https://.../targets.json"></ion-input>
-            </ion-item>
-            <ion-button expand="block" (click)="loadFromJson()" [disabled]="!jsonUrl">Cargar</ion-button>
-            <div class="upload-row">
-              <ion-button size="small" (click)="jsonInput.click()">Cargar JSON desde dispositivo</ion-button>
-              <input #jsonInput type="file" hidden accept="application/json" (change)="onJsonSelected($event)" />
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <ion-modal [isOpen]="openTargetsModal" (didDismiss)="openTargetsModal=false" style="--width: 720px; --max-width: 95vw; --height: auto; --border-radius: 16px;">
+    <ng-template>
+      <div class="p-3">
+        <div class="card shadow border-0 rounded-4">
+          <app-targets-table [items]="targets" (edit)="onTableEdit($event)" (remove)="onTableDelete($event)" (close)="openTargetsModal=false"></app-targets-table>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+  <ion-modal [isOpen]="openImportModal" (didDismiss)="openImportModal=false" style="--width: 720px; --max-width: 95vw; --height: auto; --border-radius: 16px;">
+    <ng-template>
+      <div class="p-3">
+        <div class="card shadow border-0 rounded-4">
+          <app-import-json (close)="openImportModal=false"></app-import-json>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>
+<ion-menu contentId="home-content" menuId="main-menu" type="overlay" style="--width: 100vw;">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Menú</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding">
+    <ion-list>
+      <ion-menu-toggle>
+        <ion-item button detail="false" (click)="openProfileFromMenu()">
+          <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+          <ion-label>Perfil</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+      <ion-menu-toggle>
+        <ion-item button detail="false" (click)="navigateArFromMenu()">
+          <ion-icon name="cube-outline" slot="start"></ion-icon>
+          <ion-label>AR</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+      <ion-menu-toggle>
+        <ion-item button color="danger" detail="false" (click)="logoutFromMenu()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          <ion-label>Cerrar sesión</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+    </ion-list>
+  </ion-content>
+  
+</ion-menu>
