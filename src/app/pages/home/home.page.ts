@@ -27,12 +27,8 @@ export class HomePage implements OnInit {
     modelUrl: ['', [Validators.required]],
     scale: ['1 1 1', [Validators.required]]
   });
-  jsonUrl = '';
   openTargetsModal = false;
   openImportModal = false;
-  patternFile: File | null = null;
-  modelFile: File | null = null;
-  jsonFile: File | null = null;
   saving = false;
   uploadingPattern = false;
   uploadingModel = false;
@@ -158,12 +154,6 @@ export class HomePage implements OnInit {
     }
   }
 
-  async loadFromJson() {
-    if (!this.jsonUrl) return;
-    await this.targetsService.fetchTargetsFromJson(this.jsonUrl);
-    await this.presentToast('Targets cargados desde JSON');
-  }
-
   async onPatternSelected(ev: any) {
     const file = ev.target.files?.[0];
     if (!file) return;
@@ -205,19 +195,7 @@ export class HomePage implements OnInit {
     this.uploadingModel = false;
   }
 
-  async onJsonSelected(ev: any) {
-    const file = ev.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const list = JSON.parse(reader.result as string) as Target[];
-        this.targetsService.setTargetsFromList(list);
-        this.presentToast('Targets cargados desde archivo');
-      } catch {}
-    };
-    reader.readAsText(file);
-  }
+  
 
   async presentToast(message: string) {
     const t = await this.toast.create({ message, duration: 1500, position: 'bottom' });
