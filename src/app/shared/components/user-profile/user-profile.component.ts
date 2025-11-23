@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class UserProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
-  @Output() close = new EventEmitter<void>();
+  @Output() dismiss = new EventEmitter<void>();
   form = this.fb.group({
     displayName: ['', [Validators.required, Validators.minLength(2)]],
     email: [{ value: '', disabled: true }]

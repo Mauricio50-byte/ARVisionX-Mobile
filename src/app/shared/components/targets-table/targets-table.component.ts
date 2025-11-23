@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges } from '@angular/core';
 import { Target } from '../../../core/models/target.model';
 
 @Component({
@@ -7,11 +7,11 @@ import { Target } from '../../../core/models/target.model';
   styleUrls: ['./targets-table.component.scss'],
   standalone: false
 })
-export class TargetsTableComponent {
+export class TargetsTableComponent implements OnChanges {
   @Input() items: Target[] = [];
   @Output() edit = new EventEmitter<Target>();
   @Output() remove = new EventEmitter<number>();
-  @Output() close = new EventEmitter<void>();
+  @Output() dismiss = new EventEmitter<void>();
 
   q = '';
   filtered: Target[] = [];

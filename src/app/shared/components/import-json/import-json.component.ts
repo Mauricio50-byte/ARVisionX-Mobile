@@ -11,7 +11,7 @@ export class ImportJsonComponent {
   private targets = inject(TargetsService);
   jsonUrl = '';
   loading = false;
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
 
   async loadFromUrl() {
     if (!this.jsonUrl || this.loading) return;

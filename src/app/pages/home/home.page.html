@@ -111,7 +111,7 @@
     <ng-template>
       <div class="p-3">
         <div class="card shadow border-0 rounded-4">
-          <app-targets-table [items]="targets" (edit)="onTableEdit($event)" (remove)="onTableDelete($event)" (close)="openTargetsModal=false"></app-targets-table>
+          <app-targets-table [items]="targets" (edit)="onTableEdit($event)" (remove)="onTableDelete($event)" (dismiss)="openTargetsModal=false"></app-targets-table>
         </div>
       </div>
     </ng-template>
@@ -120,7 +120,7 @@
     <ng-template>
       <div class="p-3">
         <div class="card shadow border-0 rounded-4">
-          <app-import-json (close)="openImportModal=false"></app-import-json>
+          <app-import-json (closed)="openImportModal=false"></app-import-json>
         </div>
       </div>
     </ng-template>
@@ -130,6 +130,13 @@
   <ion-header>
     <ion-toolbar>
       <ion-title>Menú</ion-title>
+      <ion-buttons slot="end">
+        <ion-menu-toggle>
+          <ion-button aria-label="Cerrar menú">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-menu-toggle>
+      </ion-buttons>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">
