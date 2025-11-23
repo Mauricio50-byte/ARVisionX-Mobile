@@ -1,1 +1,60 @@
+:host {
+  display: block;
+}
 
+.ar-content {
+  --background: #000;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.ar-wrapper {
+  position: fixed;
+  inset: 0;
+  background: #000;
+}
+
+.ar-canvas, a-scene {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+a-scene, a-scene canvas, a-scene video {
+  position: absolute;
+  inset: 0;
+}
+
+video, canvas {
+  object-fit: cover;
+}
+
+.ar-overlay {
+  position: absolute;
+  top: env(safe-area-inset-top);
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.ar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+
+.ar-title {
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.ar-user {
+  font-size: 12px;
+  opacity: .85;
+}
