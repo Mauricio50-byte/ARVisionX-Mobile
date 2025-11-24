@@ -22,7 +22,26 @@ export class ArViewComponent implements AfterViewInit {
       }
       const model = document.querySelector('#model-container') as any;
       if (model && target.modelUrl) {
-        model.setAttribute('gltf-model', target.modelUrl);
+        const url = target.modelUrl;
+        const ext = (url.split('.').pop() || '').toLowerCase();
+
+        // Limpia atributos previos
+        model.removeAttribute('gltf-model');
+        model.removeAttribute('obj-model');
+        model.removeAttribute('collada-model');
+        model.removeAttribute('geometry');
+        model.removeAttribute('material');
+
+        if (ext === 'glb' || ext === 'gltf') {
+          model.setAttribute('gltf-model', url);
+        } else if (ext === 'obj') {
+          model.setAttribute('obj-model', `obj: ${url}`);
+        } else if (ext === 'dae') {
+          model.setAttribute('collada-model', url);
+        } else if (['png','jpg','jpeg','webp','svg'].includes(ext)) {
+          model.setAttribute('geometry', 'primitive: plane; height: 1; width: 1');
+          model.setAttribute('material', `src: ${url}; transparent: true`);
+        }
         model.setAttribute('scale', target.scale);
       }
     });

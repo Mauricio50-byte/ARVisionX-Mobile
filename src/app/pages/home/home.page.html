@@ -52,13 +52,13 @@
                 <ng-template #patternUrlBlock>
                   <ion-item>
                     <ion-label position="stacked">Pattern/URL</ion-label>
-                    <ion-input formControlName="pattern" placeholder="URL .patt/.mind"></ion-input>
+                    <ion-input formControlName="pattern" placeholder="URL .patt/.mind o .png/.jpg"></ion-input>
                   </ion-item>
                   <div class="mt-2 d-flex gap-2">
                     <ion-button size="small" [disabled]="uploadingPattern" (click)="patternInput.click()">
                       {{ uploadingPattern ? 'Subiendo...' : 'Subir Pattern' }}
                     </ion-button>
-                    <input #patternInput type="file" hidden accept=".patt,.mind,image/*" (change)="onPatternSelected($event)" />
+                    <input #patternInput type="file" hidden accept=".patt,.mind,.png,.jpg,.jpeg" (change)="onPatternSelected($event)" />
                   </div>
                 </ng-template>
               </div>
@@ -66,13 +66,13 @@
               <div class="col-12">
                 <ion-item>
                   <ion-label position="stacked">Model URL</ion-label>
-                  <ion-input formControlName="modelUrl" placeholder="URL .glb/.gltf"></ion-input>
+                  <ion-input formControlName="modelUrl" placeholder="URL .glb/.gltf/.obj/.dae o .png/.jpg/.webp/.svg"></ion-input>
                 </ion-item>
                 <div class="mt-2 d-flex gap-2">
                   <ion-button size="small" [disabled]="uploadingModel" (click)="modelInput.click()">
                     {{ uploadingModel ? 'Subiendo...' : 'Subir Modelo' }}
                   </ion-button>
-                  <input #modelInput type="file" hidden accept=".glb,.gltf,model/*" (change)="onModelSelected($event)" />
+                  <input #modelInput type="file" hidden accept=".glb,.gltf,.obj,.dae,.png,.jpg,.jpeg,.webp,.svg" (change)="onModelSelected($event)" />
                 </div>
               </div>
 

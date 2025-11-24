@@ -180,8 +180,8 @@ export class HomePage implements OnInit {
     const file = ev.target.files?.[0];
     if (!file) return;
     const ext = file.name.toLowerCase().split('.').pop();
-    if (!['glb','gltf'].includes(ext || '')) {
-      await this.presentToast('Solo se permiten .glb o .gltf');
+    if (!['glb','gltf','obj','dae','png','jpg','jpeg','webp','svg'].includes(ext || '')) {
+      await this.presentToast('Formatos permitidos: .glb, .gltf, .obj, .dae, .png, .jpg/.jpeg, .webp, .svg');
       return;
     }
     if (file.size > this.maxSizeBytes) {
