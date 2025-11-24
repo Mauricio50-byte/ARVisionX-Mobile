@@ -55,10 +55,11 @@
                     <ion-input formControlName="pattern" placeholder="URL .patt/.mind o .png/.jpg"></ion-input>
                   </ion-item>
                   <div class="mt-2 d-flex gap-2">
-                    <ion-button size="small" [disabled]="uploadingPattern" (click)="patternInput.click()">
+                    <label class="btn btn-outline-primary btn-sm" for="patternInput">
+                      <i class="bi bi-upload me-1"></i>
                       {{ uploadingPattern ? 'Subiendo...' : 'Subir Pattern' }}
-                    </ion-button>
-                    <input #patternInput type="file" hidden accept=".patt,.mind,.png,.jpg,.jpeg" (change)="onPatternSelected($event)" />
+                      <input id="patternInput" type="file" [disabled]="uploadingPattern" accept="application/octet-stream,.patt,.mind,image/*" (change)="onPatternSelected($event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+                    </label>
                   </div>
                 </ng-template>
               </div>
@@ -69,10 +70,11 @@
                   <ion-input formControlName="modelUrl" placeholder="URL .glb/.gltf/.obj/.dae o .png/.jpg/.webp/.svg"></ion-input>
                 </ion-item>
                 <div class="mt-2 d-flex gap-2">
-                  <ion-button size="small" [disabled]="uploadingModel" (click)="modelInput.click()">
+                  <label class="btn btn-outline-primary btn-sm" for="modelInput">
+                    <i class="bi bi-upload me-1"></i>
                     {{ uploadingModel ? 'Subiendo...' : 'Subir Modelo' }}
-                  </ion-button>
-                  <input #modelInput type="file" hidden accept=".glb,.gltf,.obj,.dae,.png,.jpg,.jpeg,.webp,.svg" (change)="onModelSelected($event)" />
+                    <input id="modelInput" type="file" [disabled]="uploadingModel" accept=".glb,.gltf,.obj,.dae,image/*,.png,.jpg,.jpeg,.webp,.svg,application/octet-stream" (change)="onModelSelected($event)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+                  </label>
                 </div>
               </div>
 
@@ -147,12 +149,7 @@
           <ion-label>Perfil</ion-label>
         </ion-item>
       </ion-menu-toggle>
-      <ion-menu-toggle>
-        <ion-item button detail="false" (click)="navigateArFromMenu()">
-          <ion-icon name="cube-outline" slot="start"></ion-icon>
-          <ion-label>AR</ion-label>
-        </ion-item>
-      </ion-menu-toggle>
+      
       <ion-menu-toggle>
         <ion-item button color="danger" detail="false" (click)="logoutFromMenu()">
           <ion-icon name="log-out-outline" slot="start"></ion-icon>

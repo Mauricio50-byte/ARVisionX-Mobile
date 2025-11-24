@@ -60,9 +60,6 @@ export class HomePage implements OnInit {
     window.dispatchEvent(new Event('open-profile'));
   }
 
-  navigateArFromMenu() {
-    this.router.navigate(['/ar']);
-  }
 
   async logoutFromMenu() {
     await this.auth.logout();
@@ -158,8 +155,8 @@ export class HomePage implements OnInit {
     const file = ev.target.files?.[0];
     if (!file) return;
     const ext = file.name.toLowerCase().split('.').pop();
-    if (!['patt','mind'].includes(ext || '')) {
-      await this.presentToast('Solo se permiten .patt o .mind');
+    if (!['patt','mind','png','jpg','jpeg'].includes(ext || '')) {
+      await this.presentToast('Formatos permitidos: .patt, .mind, .png, .jpg/.jpeg');
       return;
     }
     if (file.size > this.maxSizeBytes) {
