@@ -18,8 +18,8 @@ const routes: Routes = [
   },
   {
     path: 'ar',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    loadChildren: () => import('./pages/ar/ar.module').then(m => m.ArPageModule),
+    canActivate: [AuthGuard]
   },
   {
     path: '',

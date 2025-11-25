@@ -4,6 +4,11 @@
     <span class="header-title">{{title}}</span>
   </div>
   <div class="header-right">
+    <ion-button fill="clear" size="small" aria-label="Abrir AR" (click)="onNavigateAr()">
+      <ion-icon name="camera-outline"></ion-icon>
+      <ion-label>AR</ion-label>
+    </ion-button>
+    <ion-badge color="primary" *ngIf="activeTargetName" (click)="onOpenTargets()" style="cursor:pointer">{{activeTargetName}}</ion-badge>
     <ion-chip class="user-chip" (click)="onOpenProfile()">
       <ion-avatar class="avatar">
         <span>{{ displayInitials }}</span>

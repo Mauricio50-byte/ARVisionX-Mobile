@@ -1,6 +1,7 @@
 import { Component, Input, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { TargetsService } from '../../../core/services/targets.service';
 
 @Component({
   selector: 'app-header-actions',
@@ -14,15 +15,20 @@ export class HeaderActionsComponent implements OnInit, OnDestroy {
   openProfileModal = false;
   private router = inject(Router);
   private auth = inject(AuthService);
+  private targets = inject(TargetsService);
+  activeTargetName = '';
+  private targetSub: any;
 
   private onOpenProfileEvent = () => { this.openProfileModal = true; };
 
   ngOnInit() {
     window.addEventListener('open-profile', this.onOpenProfileEvent);
+    this.targetSub = this.targets.getActiveTarget().subscribe(t => this.activeTargetName = t?.name || '');
   }
 
   ngOnDestroy() {
     window.removeEventListener('open-profile', this.onOpenProfileEvent);
+    if (this.targetSub) this.targetSub.unsubscribe?.();
   }
 
   get displayInitials(): string {
@@ -40,6 +46,10 @@ export class HeaderActionsComponent implements OnInit, OnDestroy {
 
   onNavigateAr() {
     this.router.navigate(['/ar']);
+  }
+
+  onOpenTargets() {
+    window.dispatchEvent(new Event('open-targets'));
   }
 
   async onLogout() {

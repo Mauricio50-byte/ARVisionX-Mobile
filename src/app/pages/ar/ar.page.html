@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Realidad Aumentada</ion-title>
+    <ion-buttons slot="end">
+      <ion-badge color="primary" *ngIf="activeTargetName" (click)="openTargetsFromAr()" style="cursor:pointer">{{activeTargetName}}</ion-badge>
+      <ion-button fill="outline" size="small" (click)="openTargetsFromAr()">
+        <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
+        Cambiar Target
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+
+<ion-content [fullscreen]="true" class="ar-page">
+  <div class="camera-container">
+    <div class="camera-frame" #wrapper>
+      <a-scene
+        #scene
+        vr-mode-ui="enabled: false;"
+        renderer="logarithmicDepthBuffer: true;"
+        embedded
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+      >
+        <a-entity camera></a-entity>
+      </a-scene>
+      <div class="overlay" *ngIf="loading || error">
+        <div class="banner">
+          <span>{{ error || 'Solicitando cámara...' }}</span>
+          <ion-button size="small" (click)="requestCamera()" [disabled]="loading">Permitir cámara</ion-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

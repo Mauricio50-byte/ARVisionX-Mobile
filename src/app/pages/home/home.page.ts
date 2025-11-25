@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TargetsService } from '../../core/services/targets.service';
 import { Target } from '../../core/models/target.model';
@@ -12,9 +12,10 @@ import { ToastController } from '@ionic/angular';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private targetsService = inject(TargetsService);
   private fb = inject(FormBuilder);
   private toast = inject(ToastController);
@@ -37,6 +38,7 @@ export class HomePage implements OnInit {
   presets: string[] = ['hiro', 'kanji'];
   selectedPreset = 'hiro';
   private lastPatternUrl = '';
+  private onOpenTargetsEvent = () => { this.openTargetsModal = true; };
 
   ngOnInit() {
     this.targetsService.getTargets().subscribe(list => { this.targets = list; });
@@ -54,6 +56,12 @@ export class HomePage implements OnInit {
         this.form.patchValue({ pattern: restore });
       }
     });
+    window.addEventListener('open-targets', this.onOpenTargetsEvent);
+    const q = this.route.snapshot.queryParamMap.get('openTargets');
+    if (q === '1') {
+      this.openTargetsModal = true;
+      this.router.navigate([], { queryParams: { openTargets: null }, queryParamsHandling: 'merge' });
+    }
   }
 
   openProfileFromMenu() {
@@ -105,6 +113,10 @@ export class HomePage implements OnInit {
 
   openTargets() {
     this.openTargetsModal = true;
+  }
+
+  navigateArFromMenu() {
+    this.router.navigate(['/ar']);
   }
 
   onTableEdit(t: Target) {
@@ -197,5 +209,8 @@ export class HomePage implements OnInit {
   async presentToast(message: string) {
     const t = await this.toast.create({ message, duration: 1500, position: 'bottom' });
     await t.present();
+  }
+  ngOnDestroy() {
+    window.removeEventListener('open-targets', this.onOpenTargetsEvent);
   }
 }

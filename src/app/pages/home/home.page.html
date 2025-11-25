@@ -149,6 +149,12 @@
           <ion-label>Perfil</ion-label>
         </ion-item>
       </ion-menu-toggle>
+      <ion-menu-toggle>
+        <ion-item button detail="false" (click)="navigateArFromMenu()">
+          <ion-icon name="camera-outline" slot="start"></ion-icon>
+          <ion-label>Realidad Aumentada</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
       
       <ion-menu-toggle>
         <ion-item button color="danger" detail="false" (click)="logoutFromMenu()">
