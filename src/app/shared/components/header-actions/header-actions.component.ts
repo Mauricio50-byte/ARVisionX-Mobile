@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, inject, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { TargetsService } from '../../../core/services/targets.service';
@@ -19,11 +19,16 @@ export class HeaderActionsComponent implements OnInit, OnDestroy {
   activeTargetName = '';
   private targetSub: any;
 
+  private zone = inject(NgZone);
   private onOpenProfileEvent = () => { this.openProfileModal = true; };
 
   ngOnInit() {
     window.addEventListener('open-profile', this.onOpenProfileEvent);
-    this.targetSub = this.targets.getActiveTarget().subscribe(t => this.activeTargetName = t?.name || '');
+    this.targetSub = this.targets.getActiveTarget().subscribe(t => {
+      this.zone.run(() => {
+        this.activeTargetName = t?.name || '';
+      });
+    });
   }
 
   ngOnDestroy() {

@@ -43,7 +43,7 @@ export class AuthService {
   async login(email: string, password: string): Promise<User> {
     this.ensureInit();
     const res = await signInWithEmailAndPassword(this.auth!, email, password);
-    try { await res.user.getIdToken(true); } catch {}
+    try { await res.user.getIdToken(true); } catch { }
     try {
       await update(ref(this.db!, `users/${res.user.uid}`), {
         id: res.user.uid,
@@ -51,14 +51,14 @@ export class AuthService {
         displayName: res.user.displayName || '',
         lastLoginAt: serverTimestamp()
       });
-    } catch {}
+    } catch { }
     return res.user;
   }
 
   async register(displayName: string, email: string, password: string): Promise<User> {
     this.ensureInit();
     const res = await createUserWithEmailAndPassword(this.auth!, email, password);
-    try { await res.user.getIdToken(true); } catch {}
+    try { await res.user.getIdToken(true); } catch { }
     await updateProfile(res.user, { displayName });
     try {
       await set(ref(this.db!, `users/${res.user.uid}`), {
@@ -67,7 +67,7 @@ export class AuthService {
         displayName,
         createdAt: serverTimestamp()
       });
-    } catch {}
+    } catch { }
     return res.user;
   }
 
@@ -142,5 +142,12 @@ export class AuthService {
     } catch {
       return false;
     }
+  }
+  get authState$(): Observable<User | null> {
+    this.ensureInit();
+    return new Observable((subscriber) => {
+      const unsubscribe = onAuthStateChanged(this.auth!, (user) => subscriber.next(user));
+      return () => unsubscribe();
+    });
   }
 }

@@ -42,11 +42,19 @@ export class HomePage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.targetsService.getTargets().subscribe(list => { this.targets = list; });
-    this.targetsService.fetchTargets();
-    const u = this.auth.getCurrentUser();
-    if (u) {
-      this.auth.userProfile$(u.uid).subscribe(p => this.displayName = p?.displayName || '');
-    }
+
+    this.auth.authState$.subscribe(user => {
+      if (user) {
+        this.auth.userProfile$(user.uid).subscribe(p => {
+          this.displayName = p?.displayName || user.displayName || 'Usuario';
+        });
+        this.targetsService.fetchTargets();
+      } else {
+        this.displayName = '';
+        this.targetsService.fetchTargets(); // Will load defaults
+      }
+    });
+
     this.form.controls.type.valueChanges.subscribe(v => {
       if (v === 'preset') {
         this.lastPatternUrl = (this.form.value.pattern || this.lastPatternUrl) as string;
@@ -167,7 +175,7 @@ export class HomePage implements OnInit, OnDestroy {
     const file = ev.target.files?.[0];
     if (!file) return;
     const ext = file.name.toLowerCase().split('.').pop();
-    if (!['patt','mind','png','jpg','jpeg'].includes(ext || '')) {
+    if (!['patt', 'mind', 'png', 'jpg', 'jpeg'].includes(ext || '')) {
       await this.presentToast('Formatos permitidos: .patt, .mind, .png, .jpg/.jpeg');
       return;
     }
@@ -189,7 +197,7 @@ export class HomePage implements OnInit, OnDestroy {
     const file = ev.target.files?.[0];
     if (!file) return;
     const ext = file.name.toLowerCase().split('.').pop();
-    if (!['glb','gltf','obj','dae','png','jpg','jpeg','webp','svg'].includes(ext || '')) {
+    if (!['glb', 'gltf', 'obj', 'dae', 'png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext || '')) {
       await this.presentToast('Formatos permitidos: .glb, .gltf, .obj, .dae, .png, .jpg/.jpeg, .webp, .svg');
       return;
     }
@@ -204,7 +212,7 @@ export class HomePage implements OnInit, OnDestroy {
     this.uploadingModel = false;
   }
 
-  
+
 
   async presentToast(message: string) {
     const t = await this.toast.create({ message, duration: 1500, position: 'bottom' });
