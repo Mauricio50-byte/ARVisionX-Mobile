@@ -12,6 +12,15 @@ export class ArPage implements AfterViewInit {
   @ViewChild('arframe', { static: true }) frameRef!: ElementRef<HTMLIFrameElement>;
   private router = inject(Router);
   private targets = inject(TargetsService);
+  private lastTarget: any = null;
+  private supabaseDemoTarget = {
+    id: undefined,
+    name: 'Local Pattern Demo',
+    type: 'pattern',
+    pattern: '/assets/pattern-t1.patt',
+    modelUrl: '/assets/santiado%20bernabeu.jpg',
+    scale: '1 1 1'
+  };
 
   ngAfterViewInit() {
     const send = (t: any) => {
@@ -22,7 +31,26 @@ export class ArPage implements AfterViewInit {
         win.postMessage({ type: 'SET_TARGET', payload: t }, window.location.origin);
       } catch {}
     };
-    this.targets.getActiveTarget().subscribe(t => send(t));
+    const shouldFallback = (t: any) => {
+      const has = (s: any) => !!(typeof s === 'string' && s.trim());
+      if (!t) return true;
+      if (t.type === 'preset') return !has(t.modelUrl);
+      if (t.type === 'pattern') return !(has(t.pattern) && has(t.modelUrl));
+      return true;
+    };
+    this.targets.getActiveTarget().subscribe(t => {
+      this.lastTarget = t;
+      send(shouldFallback(t) ? this.supabaseDemoTarget : t);
+    });
+    const frame = this.frameRef?.nativeElement;
+    if (frame) {
+      frame.addEventListener('load', () => {
+        if (this.lastTarget) {
+          const t = this.lastTarget;
+          send(shouldFallback(t) ? this.supabaseDemoTarget : t);
+        }
+      });
+    }
   }
 
   closeAR() {
