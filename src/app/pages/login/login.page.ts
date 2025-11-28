@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { FormBuilder, Validators } from '@angular/forms';
 
@@ -9,9 +9,10 @@ import { FormBuilder, Validators } from '@angular/forms';
   styleUrls: ['login.page.scss'],
   standalone: false,
 })
-export class LoginPage {
+export class LoginPage implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -20,6 +21,12 @@ export class LoginPage {
   showPassword = false;
   loading = false;
   error = '';
+  success = '';
+
+  ngOnInit() {
+    const r = this.route.snapshot.queryParamMap.get('registered');
+    if (r === '1') this.success = 'Registro exitoso, inicia sesión';
+  }
 
   async onSubmit() {
     if (this.form.invalid || this.loading) return;

@@ -62,12 +62,7 @@ export class ArPage implements AfterViewInit {
     this.targets.getActiveTarget().subscribe(t => {
       this.lastTarget = t;
       const fallback = shouldFallback(t);
-      if (fallback) {
-        this.debugInfo += ' (Using Fallback Demo)';
-        send(this.supabaseDemoTarget);
-      } else {
-        send(t);
-      }
+      if (!fallback) send(t);
     });
     const frame = this.frameRef?.nativeElement;
     if (frame) {
@@ -75,7 +70,7 @@ export class ArPage implements AfterViewInit {
         if (this.lastTarget) {
           const t = this.lastTarget;
           const fallback = shouldFallback(t);
-          send(fallback ? this.supabaseDemoTarget : t);
+          if (!fallback) send(t);
         }
       });
     }

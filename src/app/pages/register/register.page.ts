@@ -30,7 +30,7 @@ export class RegisterPage {
     const { displayName, email, password } = this.form.value;
     try {
       await this.auth.register(displayName!, email!, password!);
-      this.router.navigate(['/home']);
+      this.router.navigate(['/login'], { queryParams: { registered: '1' } });
     } catch (e: any) {
       const code = e?.code;
       this.error = code === 'auth/email-already-in-use' ? 'El email ya está registrado'

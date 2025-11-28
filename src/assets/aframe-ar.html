@@ -58,7 +58,7 @@
 
 <body>
   <a-scene embedded
-    renderer="logarithmicDepthBuffer: true; antialias: true; precision: highp; alpha: true; colorManagement: true;"
+    renderer="logarithmicDepthBuffer: true; antialias: true; precision: highp; alpha: true; colorManagement: true; powerPreference: high-performance;"
     arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false; sourceWidth: 1920; sourceHeight: 1080; displayWidth: 1920; displayHeight: 1080;">
     <a-entity camera></a-entity>
     <a-entity light="type: ambient; color: #BBB"></a-entity>
@@ -73,7 +73,7 @@
   <script>
     (function () {
       const scene = document.querySelector('a-scene');
-      let currentMarker = null;
+      let currentMarkers = [];
       if (scene) {
         scene.addEventListener('loaded', function () { console.log('A-Frame scene loaded'); });
         scene.addEventListener('renderstart', function () { console.log('Renderer started'); });
@@ -96,10 +96,10 @@
         if (s.includes('/')) return true;
         return false;
       }
-      function clearMarker() {
-        if (currentMarker && scene) {
-          try { scene.removeChild(currentMarker); } catch (e) { }
-          currentMarker = null;
+      function clearMarkers() {
+        if (scene && currentMarkers && currentMarkers.length) {
+          try { currentMarkers.forEach(m => { try { scene.removeChild(m); } catch (_) { } }); } catch (_) { }
+          currentMarkers = [];
         }
       }
       function log(msg) {
@@ -107,9 +107,8 @@
         window.parent.postMessage({ type: 'AR_DEBUG', msg: msg }, '*');
       }
 
-      async function applyTarget(target) {
-        if (!scene || !target) return;
-        clearMarker();
+      async function createMarkerForTarget(target) {
+        if (!scene || !target) return null;
         log(`Applying: ${target.name} (${target.type})`);
 
         const type = (target.type || 'preset');
@@ -215,13 +214,30 @@
         content.addEventListener('materialtextureloaded', function () { console.log('Texture loaded'); });
         content.addEventListener('image-loaded', function () { log('Image LOADED OK'); });
         scene.appendChild(marker);
-        currentMarker = marker;
+        return marker;
+      }
+
+      async function applyTarget(target) {
+        clearMarkers();
+        const m = await createMarkerForTarget(target);
+        if (m) currentMarkers.push(m);
+      }
+
+      async function applyTargets(list) {
+        clearMarkers();
+        const valid = Array.isArray(list) ? list.filter(t => !!t && typeof t === 'object') : [];
+        for (const t of valid) {
+          const m = await createMarkerForTarget(t);
+          if (m) currentMarkers.push(m);
+        }
+        log(`Applied ${currentMarkers.length} markers`);
       }
 
       window.addEventListener('message', function (ev) {
         try {
           const { type, payload } = ev.data || {};
           if (type === 'SET_TARGET') applyTarget(payload);
+          if (type === 'SET_TARGETS') applyTargets(payload);
         } catch (e) { }
       });
 

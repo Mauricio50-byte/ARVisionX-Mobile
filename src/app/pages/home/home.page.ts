@@ -34,7 +34,7 @@ export class HomePage implements OnInit, OnDestroy {
   uploadingPattern = false;
   uploadingModel = false;
   displayName = '';
-  private maxSizeBytes = 10 * 1024 * 1024;
+  private maxSizeBytes = 200 * 1024 * 1024;
   presets: string[] = ['hiro', 'kanji'];
   selectedPreset = 'hiro';
   private lastPatternUrl = '';

@@ -15,6 +15,7 @@
             <ion-card-subtitle>Ingresa a tu cuenta</ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
+            <ion-note color="success" *ngIf="success" class="mb-2">{{success}}</ion-note>
             <form [formGroup]="form" (ngSubmit)="onSubmit()">
               <ion-item>
                 <ion-label position="stacked">Email</ion-label>
